@@ -1,0 +1,46 @@
+name: Build MakeRW
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: [x86_64, armhf, aarch64]
+        static: [0, 1]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up cross-compilation environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+
+      - name: Build MakeRW
+        run: |
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            export CROSS_COMPILE=""
+          elif [ "${{ matrix.arch }}" = "armhf" ]; then
+            export CROSS_COMPILE="arm-linux-gnueabihf-"
+          elif [ "${{ matrix.arch }}" = "aarch64" ]; then
+            export CROSS_COMPILE="aarch64-linux-gnu-"
+          fi
+
+          if [ "${{ matrix.static }}" = "1" ]; then
+            export STATIC=1
+          else
+            export STATIC=0
+          fi
+
+          make clean
+          make
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: makerw-${{ matrix.arch }}${{ matrix.static == 1 && '-static' || '' }}
+          path: makerw
