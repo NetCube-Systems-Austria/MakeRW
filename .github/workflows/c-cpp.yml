@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up cross-compilation environment
         run: |
@@ -40,7 +40,7 @@ jobs:
           make
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: makerw-${{ matrix.arch }}${{ matrix.static == 1 && '-static' || '' }}
           path: makerw
