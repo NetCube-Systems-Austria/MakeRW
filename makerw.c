@@ -75,7 +75,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    realpath(argv[optind], directory);
+    if (realpath(argv[optind], directory) == NULL) {
+        fprintf(stderr, "%s: Failed to resolve path %s: %s\n", argv[0], argv[optind], strerror(errno));
+        return 1;
+    }
 
     // Check if the directory exists
     if (access(directory, F_OK) != 0) {
@@ -128,7 +131,11 @@ int main(int argc, char *argv[]) {
     // Copy the directory to the new folder
     char *copyCommand = malloc(strlen(directory) + strlen(newFolder) + 16);
     sprintf(copyCommand, "cp -a %s %s", directory, newFolder);
-    system(copyCommand);
+    if (system(copyCommand) != 0) {
+        fprintf(stderr, "%s: Failed to copy %s to %s\n", argv[0], directory, newFolder);
+        free(copyCommand);
+        return 1;
+    }
     free(copyCommand);
 
     // Bind the new folder to the original directory
