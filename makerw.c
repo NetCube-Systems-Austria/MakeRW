@@ -27,7 +27,7 @@
 #include <sys/mount.h>
 
 void printHelp(char *programName) {
-    fprintf(stderr, "MakeRW v1.0 ("__DATE__" "__TIME__")\n");
+    fprintf(stderr, "MakeRW v1.1 ("__DATE__" "__TIME__")\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Usage: %s [-uv] [-t DIR] DIRECTORY\n", programName);
     fprintf(stderr, "\n");
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], directory);
         return 1;
     }
-    
+
     // Unmount the directory if requested
     if (unmount) {
         if (umount2(directory, MNT_DETACH) != 0) {
@@ -127,7 +127,13 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
         return 1;
     }
-    
+
+    // Delete the new folder in order for cp to create it
+    if (rmdir(newFolder) != 0) {
+        fprintf(stderr, "%s: Failed to rmdir %s: %s\n", argv[0], newFolder, strerror(errno));
+        return 1;
+    }
+
     // Copy the directory to the new folder
     char *copyCommand = malloc(strlen(directory) + strlen(newFolder) + 16);
     sprintf(copyCommand, "cp -a %s %s", directory, newFolder);
@@ -143,7 +149,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "%s: Failed to bind %s to %s: %s\n", argv[0], newFolder, directory, strerror(errno));
         return 1;
     }
-    
+
     // Print success message
     if (verbose)
         printf("'%s' -> '%s'\n", newFolder, directory);

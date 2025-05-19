@@ -8,8 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        arch: [x86_64, armhf, aarch64]
-        static: [0, 1]
+        arch: [x86_64, arm, armhf, aarch64]
 
     steps:
       - name: Checkout code
@@ -18,7 +17,7 @@ jobs:
       - name: Set up cross-compilation environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf
 
       - name: Build MakeRW
         run: |
@@ -26,15 +25,13 @@ jobs:
             export CROSS_COMPILE=""
           elif [ "${{ matrix.arch }}" = "armhf" ]; then
             export CROSS_COMPILE="arm-linux-gnueabihf-"
+          elif [ "${{ matrix.arch }}" = "arm" ]; then
+            export CROSS_COMPILE="arm-linux-gnueabi-"
           elif [ "${{ matrix.arch }}" = "aarch64" ]; then
             export CROSS_COMPILE="aarch64-linux-gnu-"
           fi
 
-          if [ "${{ matrix.static }}" = "1" ]; then
-            export STATIC=1
-          else
-            export STATIC=0
-          fi
+          export STATIC=1
 
           make clean
           make
